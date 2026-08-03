@@ -16,7 +16,7 @@ obj/%.o: src/%.cpp
 	$(COMPILER) $(CFLAGS) -c $< -o $@
 
 dir:
-	mkdir bin obj
+	mkdir -p bin obj
 
 clean:
 	rm -rf bin obj
