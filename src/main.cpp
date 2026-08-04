@@ -10,7 +10,7 @@ int main (int argc, char ** argv) {
     Tensor<double> t1 (3, dimensions);
     Tensor<double> t2 (3, dimensions);
 
-    std::uniform_real_distribution<double> unif(0, 1);
+    std::uniform_real_distribution<double> unif(-1, 1);
     std::default_random_engine re;
 
     for (int i = 0; i < 8; ++ i) {
@@ -48,8 +48,12 @@ int main (int argc, char ** argv) {
     t6.print();
 
     Tensor<double> t7 = t1 + bias;
-    std::cout << "Bias addition";
+    std::cout << "Bias addition\n";
     t7.print();
+
+    Tensor<double> t8 = t1.apply(TensorCalculator::reLU<double>);
+    std::cout << "reLU application\n";
+    t8.print();
     
     return 0;
 }

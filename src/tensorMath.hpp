@@ -1,4 +1,5 @@
 #include <vector>
+#include <functional>
 
 template<typename T>
 class Tensor {
@@ -11,6 +12,7 @@ class Tensor {
     public:
         Tensor(int tempOrder, const std::vector<int>& tempDimension);
         Tensor<T> transpose();
+        Tensor<T> apply(std::function <T(T)> f);
 
         Tensor<T> operator+(const Tensor<T> & rhs);
         Tensor<T> operator*(double rhs);
@@ -30,4 +32,7 @@ namespace TensorCalculator {
     
     template<typename T>
     Tensor<T> hadamardProduct(const Tensor<T>& tensor1, const Tensor<T>& tensor2);
+
+    template <typename T>
+    T reLU(T input);
 };

@@ -1,6 +1,7 @@
 #include "tensorMath.hpp"
 #include <iostream>
 #include <cassert>
+#include <cmath>
 
 template <typename T>
 Tensor<T>::Tensor(int tempOrder, const std::vector<int>& tempDimension) {
@@ -46,6 +47,15 @@ Tensor<T> Tensor<T>::transpose() {
     }
 
     return output;
+}
+
+template <typename T>
+Tensor<T> Tensor<T>::apply(std::function <T(T)> f) {
+    Tensor<T> newTensor(order, dimension);
+    for (size_t i = 0; i < dataSize; ++ i) {
+        newTensor[i] = f(data[i]);
+    }
+    return newTensor;
 }
 
 //==================================================================
@@ -247,9 +257,16 @@ Tensor<T> TensorCalculator::hadamardProduct(const Tensor<T>& tensor1, const Tens
     return output; 
 }
 
+template<typename T>
+T TensorCalculator::reLU(T input) {
+    return (input + std::abs(input)) * static_cast<T>(0.5);
+}
+
 namespace TensorCalculator {
     template double innerProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double innerProduct(const Tensor<float>& tensor1, const Tensor<float>& tensor2);
     template Tensor<float> hadamardProduct(const Tensor<float>& tensor1, const Tensor<float>& tensor2);
     template Tensor<double> hadamardProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
+    template double reLU(double input);
+    template float reLU(float input);
 }
