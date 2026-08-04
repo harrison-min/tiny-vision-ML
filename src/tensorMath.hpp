@@ -9,7 +9,8 @@ class Tensor {
         std::vector<T> data; 
 
     public:
-        Tensor(int tempOrder, std::vector<int> tempDimension);
+        Tensor(int tempOrder, const std::vector<int>& tempDimension);
+        Tensor<T> transpose();
 
         Tensor<T> operator+(const Tensor<T> & rhs);
         Tensor<T> operator*(double rhs);
@@ -19,10 +20,14 @@ class Tensor {
 
         size_t getSize() const;
         int getOrder() const;
+        int getDimension(int index) const;
         void print() const;
 };
 
 namespace TensorCalculator {
     template <typename T>
     double innerProduct(const Tensor<T>& tensor1, const Tensor<T>& tensor2);
+    
+    template<typename T>
+    Tensor<T> hadamardProduct(const Tensor<T>& tensor1, const Tensor<T>& tensor2);
 };

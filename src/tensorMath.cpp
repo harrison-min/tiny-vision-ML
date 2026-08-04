@@ -3,7 +3,7 @@
 #include <cassert>
 
 template <typename T>
-Tensor<T>::Tensor(int tempOrder, std::vector<int> tempDimension) {
+Tensor<T>::Tensor(int tempOrder, const std::vector<int>& tempDimension) {
     assert(tempOrder >= 0);
 
     order = tempOrder;
@@ -15,14 +15,72 @@ Tensor<T>::Tensor(int tempOrder, std::vector<int> tempDimension) {
     data.resize(dataSize);
 }
 
+template <typename T>
+Tensor<T> Tensor<T>::transpose() {
+    assert(order >= 2);
+
+    int numMatrices = 1;
+    std::vector<int> outputDimension(order);
+
+    for (int i = 0; i < order - 2; ++i) {
+        numMatrices *= dimension[i];
+        outputDimension[i] = dimension[i];
+    }
+
+    int M = dimension[order - 2];
+    int N = dimension[order - 1];
+
+    outputDimension[order - 2] = dimension[order - 1];
+    outputDimension[order - 1] = dimension[order - 2];
+
+    Tensor<T> output (order, outputDimension);
+
+    int offset = M * N;
+
+    for (int i = 0; i < numMatrices; ++ i) {
+        for (int j = 0; j < M; ++ j) {
+            for (int k = 0; k < N; ++ k) {
+                output[offset * i + k * M + j] = data[offset * i + j * N + k];
+            }
+        }
+    }
+
+    return output;
+}
+
+//==================================================================
+//  OPERATOR OVERLOADING
+//==================================================================
+
 
 template<typename T>
 Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) {
-    assert (dataSize == rhs.getSize() && order == rhs.getOrder());
+    assert ((dataSize == rhs.getSize() && order == rhs.getOrder()) || 
+        (dimension[order - 1] == rhs.dimension[0] && rhs.getOrder() == 1));
 
     Tensor<T> sum (order, dimension);
-    for (size_t i = 0; i < dataSize; ++i) {
-        sum.data[i] = data [i] + rhs[i];
+    if (dataSize == rhs.getSize() && order == rhs.getOrder()) {
+        for (size_t i = 0; i < dataSize; ++i) {
+            sum[i] = data [i] + rhs[i];
+        }
+    } else {
+        int M = dimension[order - 2];
+        int N = dimension[order - 1];
+        int offset = M * N;
+        int numMatrices = 1;
+
+        for (int i = 0; i < order - 2; ++i ) {
+            numMatrices *= dimension[i];
+        }
+
+        for (int i = 0; i < numMatrices; ++ i) {
+            for (int row = 0; row < M; ++ row) {
+                for (int col = 0; col < N; ++ col){
+                    int index = offset * i + row * N + col;
+                    sum[index] = data[index] + rhs[col];
+                }
+            }
+        }
     }
 
     return sum;
@@ -32,7 +90,7 @@ template<typename T>
 Tensor<T> Tensor<T>::operator*(double rhs){
     Tensor<T> product (order, dimension);
     for (size_t i = 0; i < dataSize; ++i) {
-        product.data[i] = data [i] * rhs;
+        product[i] = data [i] * rhs;
     }
 
     return product;
@@ -52,6 +110,7 @@ Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) {
     }
 
     assert(dimension[order - 1] == rhs.dimension[order-2]);
+    // Multiplying a MxK matrix by KxN matrix
     int M = dimension[order - 2];
     int N = rhs.dimension[order - 1];
     int K = dimension[order - 1];
@@ -77,13 +136,14 @@ Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) {
                 }
 
                 int outputIndex = row * N + col;
-                output.data[outputOffset * i + outputIndex] = sum;
+                output[outputOffset * i + outputIndex] = sum;
             }
         }
     }
 
     return output;
 }
+
 
 template<typename T>
 const T& Tensor<T>::operator[](int index) const{
@@ -95,6 +155,11 @@ T& Tensor<T>::operator[](int index){
     return data[index];
 }
 
+
+//==================================================================
+//  HELPER AND GETTERS
+//==================================================================
+
 template<typename T>
 size_t Tensor<T>::getSize() const{
     return dataSize;
@@ -103,6 +168,12 @@ size_t Tensor<T>::getSize() const{
 template<typename T>
 int Tensor<T>::getOrder() const{
     return order;
+}
+
+template<typename T>
+int Tensor<T>::getDimension(int index) const{
+    assert(index < order && index >= 0);
+    return dimension[index];
 }
 
 template<typename T>
@@ -139,6 +210,10 @@ void Tensor<T>::print() const {
 template class Tensor<double>;
 template class Tensor<float>;
 
+//==================================================================
+//  TensorCalculator
+//==================================================================
+
 template <typename T>
 double TensorCalculator::innerProduct(const Tensor<T>& tensor1, const Tensor<T>& tensor2) {
     assert(tensor1.getSize() == tensor2.getSize() && tensor1.getOrder() == tensor2.getOrder());
@@ -152,8 +227,29 @@ double TensorCalculator::innerProduct(const Tensor<T>& tensor1, const Tensor<T>&
     return product;
 }
 
+template <typename T>
+Tensor<T> TensorCalculator::hadamardProduct(const Tensor<T>& tensor1, const Tensor<T>& tensor2) {
+    assert(tensor1.getOrder() == tensor2.getOrder());
+    int order = tensor1.getOrder();
+    std::vector<int> outputDimension(order);
+    for (int i = 0; i < order; ++ i) {
+        assert(tensor1.getDimension(i) == tensor2.getDimension(i));
+        outputDimension[i] = tensor1.getDimension(i);
+    }
+
+    size_t size = tensor1.getSize();
+    Tensor<T> output(order, outputDimension);
+
+    for (size_t i = 0; i < size; ++ i) {
+        output[i] = tensor1[i] * tensor2[i];
+    }
+
+    return output; 
+}
 
 namespace TensorCalculator {
     template double innerProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double innerProduct(const Tensor<float>& tensor1, const Tensor<float>& tensor2);
+    template Tensor<float> hadamardProduct(const Tensor<float>& tensor1, const Tensor<float>& tensor2);
+    template Tensor<double> hadamardProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
 }

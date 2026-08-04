@@ -3,18 +3,23 @@
 #include <random>
 
 int main (int argc, char ** argv) {
-    std::cout << "Hello World!";
+    int column = 2;
+    std::vector <int> dimensions = {2, 2, column};
+    Tensor<double> bias (1, {column});
 
-    std::vector <int> dimensions = {2, 2, 2, 2};
-    Tensor<double> t1 (4, dimensions);
-    Tensor<double> t2 (4, dimensions);
+    Tensor<double> t1 (3, dimensions);
+    Tensor<double> t2 (3, dimensions);
 
     std::uniform_real_distribution<double> unif(0, 1);
     std::default_random_engine re;
 
-    for (int i = 0; i < 16; ++ i) {
+    for (int i = 0; i < 8; ++ i) {
         t1[i] = unif(re);
         t2[i] = unif(re);
+    }
+
+    for (int i = 0; i < column; ++ i) {
+        bias[i] = unif(re);
     }
 
     std::cout << "T1 Before\n";
@@ -23,9 +28,28 @@ int main (int argc, char ** argv) {
     std::cout << "T2 Before\n";
     t2.print();
 
-    Tensor<double> t3 = t1 * t2;
-    std::cout << "Matrix Mult\n";
+    std::cout << "Euclidean Inner Product\n";
+    std::cout << TensorCalculator::innerProduct(t1, t2) << "\n";
+
+    std::cout << "Transpose of t2\n";
+    Tensor<double> t3 = t2.transpose();
     t3.print();
 
+    std::cout << "Matrix Addition\n";
+    Tensor<double> t4 = t1 + t2;
+    t4.print();
+
+    Tensor<double> t5 = t1 * t2;
+    std::cout << "Matrix Mult\n";
+    t5.print();
+
+    Tensor<double> t6 = TensorCalculator::hadamardProduct(t1, t2);
+    std::cout << "Haadamard Mult\n";
+    t6.print();
+
+    Tensor<double> t7 = t1 + bias;
+    std::cout << "Bias addition";
+    t7.print();
+    
     return 0;
 }
