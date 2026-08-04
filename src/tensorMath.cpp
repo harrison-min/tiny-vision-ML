@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <algorithm>
 
 template <typename T>
 Tensor<T>::Tensor(int tempOrder, const std::vector<int>& tempDimension) {
@@ -56,6 +57,73 @@ Tensor<T> Tensor<T>::apply(std::function <T(T)> f) {
         newTensor[i] = f(data[i]);
     }
     return newTensor;
+}
+
+template <typename T>
+Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) {
+    //calculate strides of input 
+    std::vector<int> inputStrides(order);
+    inputStrides[order - 1] = 1;
+    for (int i = order - 2; i >=0; -- i) {
+        inputStrides[i] = inputStrides[i + 1] * dimension[i + 1];
+    }
+
+
+    //find the dimensions we want to keep and populate the outputDimension vector
+    int outputDimensionSize = order - collapsingDimIndex.size();
+    assert(outputDimensionSize > 0);
+    std::vector<int> outputDimension(outputDimensionSize);
+    std::vector<int> keptDimensions(outputDimensionSize);
+
+    int tempWriteIndex = 0;
+
+    for (int i = 0; i < order; ++ i) {
+        auto it = std::find(collapsingDimIndex.begin(), collapsingDimIndex.end(), i);
+        if (it == collapsingDimIndex.end()) {
+            outputDimension[tempWriteIndex] = dimension[i];
+            keptDimensions[tempWriteIndex] = i;
+            tempWriteIndex++;
+        }
+    }
+
+    //create output Tensor and output strides
+    Tensor<T> output (outputDimensionSize, outputDimension);
+
+    std::vector<int> outputStrides(outputDimensionSize);
+    outputStrides[outputDimensionSize - 1] = 1;
+    for (int i = outputDimensionSize - 2; i >=0; -- i) {
+        outputStrides[i] = outputStrides[i + 1] * outputDimension[i + 1];
+    }
+
+    for (size_t i = 0; i < output.getSize(); ++ i ) {
+        output[i] = initValue;
+    }
+
+    // General algorithm: find coordinates in initial Tensor basis, 
+    // find the outputIndex based on strides + cooresponding coordinates, 
+    // apply function to output at the outputIndex + the data
+    // Can be thought of as many to 1 mapping
+    std::vector<int> coordinates(order);
+    
+    for (int i = 0; i < static_cast<int>(dataSize); ++ i) {
+        int remainder = i;
+        int outputIndex = 0;
+        int outputStridesIndex = 0;
+        for (int j = 0; j < order; ++j) {
+            coordinates [j] = remainder/inputStrides[j];
+            remainder %= inputStrides[j];
+
+            if (outputStridesIndex <outputDimensionSize && j == keptDimensions[outputStridesIndex]) {
+                outputIndex += (coordinates[j] * outputStrides[outputStridesIndex]);
+                outputStridesIndex ++;
+            }
+        }
+
+        output[outputIndex] = f(output[outputIndex], data[i]);
+
+    }
+   
+    return output;
 }
 
 //==================================================================
@@ -262,6 +330,11 @@ T TensorCalculator::reLU(T input) {
     return (input + std::abs(input)) * static_cast<T>(0.5);
 }
 
+template<typename T>
+T TensorCalculator::sum(T n1, T n2) {
+    return n1 + n2;
+}
+
 namespace TensorCalculator {
     template double innerProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double innerProduct(const Tensor<float>& tensor1, const Tensor<float>& tensor2);
@@ -269,4 +342,6 @@ namespace TensorCalculator {
     template Tensor<double> hadamardProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double reLU(double input);
     template float reLU(float input);
+    template double sum(double n1, double n2);
+    template float sum(float n1, float n2);
 }

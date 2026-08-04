@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <functional>
 
@@ -13,6 +14,7 @@ class Tensor {
         Tensor(int tempOrder, const std::vector<int>& tempDimension);
         Tensor<T> transpose();
         Tensor<T> apply(std::function <T(T)> f);
+        Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue);
 
         Tensor<T> operator+(const Tensor<T> & rhs);
         Tensor<T> operator*(double rhs);
@@ -35,4 +37,7 @@ namespace TensorCalculator {
 
     template <typename T>
     T reLU(T input);
+
+    template<typename T>
+    T sum(T n1, T n2);
 };

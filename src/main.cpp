@@ -54,6 +54,10 @@ int main (int argc, char ** argv) {
     Tensor<double> t8 = t1.apply(TensorCalculator::reLU<double>);
     std::cout << "reLU application\n";
     t8.print();
+
+    Tensor<double> t9 = t1.collapse({2}, TensorCalculator::sum<double>, 0);
+    std::cout << "Sum collapse\n";
+    t9.print();
     
     return 0;
 }
