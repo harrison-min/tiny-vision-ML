@@ -20,7 +20,7 @@ class TensorTestSuite : public TestSuite{
         bool transposeTest();
         bool matrixAdditionTest();
         bool matrixMultiplicationTest();
-        bool hadamardMultiplicationTest();
+        bool hadamardProductTest();
         bool biasAdditionTest();
         bool ReLUTest();
         bool sumCollapseTest();
