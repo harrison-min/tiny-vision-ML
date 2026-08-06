@@ -73,12 +73,72 @@ bool TensorTestSuite::innerProductTest(){
 }
 
 bool TensorTestSuite::transposeTest(){
+    std::vector<int> dimension = {3, 2, 2, 4};
+    Tensor<double> doubleTensor = generateTestTensor<double>(dimension);
+    Tensor<float> floatTensor = generateTestTensor<float>(dimension);
+ 
 	bool testPassed = true;
+
+    if (doubleTensor.transpose().transpose() != doubleTensor) {
+        std::cout << "FAIL: transposeTest (double Tensor Transpose of the Transpose doesnt equal the original)\n";
+        testPassed = false;
+    }
+
+    if (floatTensor.transpose().transpose() != floatTensor) {
+        std::cout << "FAIL: transposeTest (double Tensor Transpose of the Transpose doesnt equal the original)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: transposeTest\n";
+    }
+
     return testPassed;
 }
 
 bool TensorTestSuite::matrixAdditionTest(){
+    std::vector<int> dimension = {3, 2, 2, 4};
+    Tensor<double> doubleTensor = generateTestTensor<double>(dimension);
+    Tensor<float> floatTensor = generateTestTensor<float>(dimension);
+
+    Tensor<double> expectedDoubleTensor = generateTestTensor<double>(dimension);
+    Tensor<double> zeroDoubleTensor = generateTestTensor<double>(dimension);
+    Tensor<float> expectedFloatTensor = generateTestTensor<float>(dimension);
+    Tensor<float> zeroFloatTensor = generateTestTensor<float>(dimension);
+
+    int size = static_cast<int>(doubleTensor.getSize());
+    for (int i = 0; i < size; ++ i) {
+        expectedDoubleTensor[i] = 2 * doubleTensor[i];
+        expectedFloatTensor[i] = 2 * floatTensor[i];
+        zeroDoubleTensor[i] = 0;
+        zeroFloatTensor[i] = 0;
+    }
+
 	bool testPassed = true;
+    if (doubleTensor + doubleTensor != expectedDoubleTensor) {
+        std::cout << "FAIL: matrixAdditionTest (double tensor added to itself doenst match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatTensor + floatTensor != expectedFloatTensor) {
+        std::cout << "FAIL: matrixAdditionTest (float tensor added to itself doenst match expected)\n";
+        testPassed = false;
+    }
+
+    if (doubleTensor + zeroDoubleTensor != doubleTensor) {
+        std::cout << "FAIL: matrixAdditionTest (double tensor added to 0 tensor doenst equal itself)\n";
+        testPassed = false;
+    }
+
+    if (floatTensor + zeroFloatTensor != floatTensor) {
+        std::cout << "FAIL: matrixAdditionTest (float tensor added to 0 tensor doenst equal itself)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: matrixAdditionTest";
+    }
+
     return testPassed;
 	
 }
@@ -86,7 +146,6 @@ bool TensorTestSuite::matrixAdditionTest(){
 bool TensorTestSuite::matrixMultiplicationTest(){
 	bool testPassed = true;
     return testPassed;
-	
 }
 
 bool TensorTestSuite::hadamardMultiplicationTest(){
