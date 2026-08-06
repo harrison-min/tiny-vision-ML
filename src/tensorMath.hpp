@@ -21,10 +21,12 @@ class Tensor {
         Tensor<T> operator*(const Tensor<T> & rhs);
         const T& operator[](int index) const;
         T& operator[](int index);
+        bool operator==(const Tensor<T> & rhs);
+        bool operator!=(const Tensor<T> & rhs);
 
         size_t getSize() const;
         int getOrder() const;
-        int getDimension(int index) const;
+        std::vector<int> getDimension() const;
         void print() const;
 };
 

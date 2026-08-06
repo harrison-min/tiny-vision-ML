@@ -3,7 +3,7 @@ CFLAGS =  -Wall
 LDFLAGS = 
 LIBS = 
 TARGET = bin/main
-SOURCE = src/main.cpp src/tensorMath.cpp
+SOURCE = src/main.cpp src/tensorMath.cpp src/testSuite.cpp
 
 OBJECTS = $(patsubst src/%.cpp, obj/%.o, $(SOURCE))
 

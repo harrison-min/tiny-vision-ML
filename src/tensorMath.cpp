@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 template <typename T>
 Tensor<T>::Tensor(int tempOrder, const std::vector<int>& tempDimension) {
@@ -233,6 +234,26 @@ T& Tensor<T>::operator[](int index){
     return data[index];
 }
 
+template <typename T>
+bool Tensor<T>::operator==(const Tensor<T> & rhs) {
+    static const T epsilon = std::numeric_limits<T>::epsilon() * 10;
+    if (dataSize != rhs.getSize() && dimension != rhs.getDimension()) {
+        return false;
+    }
+
+    for (size_t i = 0 ; i < dataSize; ++ i) {
+        if (std::abs(data[i] - rhs[i]) > epsilon) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template <typename T>
+bool Tensor<T>::operator!=(const Tensor<T> & rhs) {
+    return !(*this == rhs);
+}
 
 //==================================================================
 //  HELPER AND GETTERS
@@ -249,9 +270,8 @@ int Tensor<T>::getOrder() const{
 }
 
 template<typename T>
-int Tensor<T>::getDimension(int index) const{
-    assert(index < order && index >= 0);
-    return dimension[index];
+std::vector<int> Tensor<T>::getDimension() const{
+    return dimension;
 }
 
 template<typename T>
@@ -310,10 +330,8 @@ Tensor<T> TensorCalculator::hadamardProduct(const Tensor<T>& tensor1, const Tens
     assert(tensor1.getOrder() == tensor2.getOrder());
     int order = tensor1.getOrder();
     std::vector<int> outputDimension(order);
-    for (int i = 0; i < order; ++ i) {
-        assert(tensor1.getDimension(i) == tensor2.getDimension(i));
-        outputDimension[i] = tensor1.getDimension(i);
-    }
+    assert(tensor1.getDimension() == tensor2.getDimension());
+    outputDimension = tensor1.getDimension();
 
     size_t size = tensor1.getSize();
     Tensor<T> output(order, outputDimension);
