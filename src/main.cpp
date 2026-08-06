@@ -1,10 +1,8 @@
 #include <iostream>
-#include "tensorMath.hpp"
+#include "testSuite.hpp"
 
 int main (int argc, char ** argv) {
-    std::cout << "Hello World!";
-    Tensor<double> t1, t2;
-    t1 + t2;
-
+    TensorTestSuite test;
+    test.run();
     return 0;
 }

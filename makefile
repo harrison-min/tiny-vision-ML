@@ -3,7 +3,7 @@ CFLAGS =  -Wall
 LDFLAGS = 
 LIBS = 
 TARGET = bin/main
-SOURCE = src/main.cpp src/tensorMath.cpp
+SOURCE = src/main.cpp src/tensorMath.cpp src/testSuite.cpp
 
 OBJECTS = $(patsubst src/%.cpp, obj/%.o, $(SOURCE))
 
@@ -16,7 +16,7 @@ obj/%.o: src/%.cpp
 	$(COMPILER) $(CFLAGS) -c $< -o $@
 
 dir:
-	mkdir bin obj
+	mkdir -p bin obj
 
 clean:
 	rm -rf bin obj
