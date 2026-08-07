@@ -52,7 +52,7 @@ Tensor<T> Tensor<T>::transpose() {
 }
 
 template <typename T>
-Tensor<T> Tensor<T>::apply(std::function <T(T)> f) {
+Tensor<T> Tensor<T>::apply(std::function <T(T)> f) const{
     Tensor<T> newTensor(order, dimension);
     for (size_t i = 0; i < dataSize; ++ i) {
         newTensor[i] = f(data[i]);

@@ -29,3 +29,8 @@ class TensorTestSuite : public TestSuite{
         TensorTestSuite();
 };
 
+class LayerTestSuite :public TestSuite {
+    public: 
+        LayerTestSuite();
+        void run() override;
+};

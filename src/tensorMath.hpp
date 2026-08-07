@@ -13,7 +13,7 @@ class Tensor {
     public:
         Tensor(int tempOrder, const std::vector<int>& tempDimension);
         Tensor<T> transpose();
-        Tensor<T> apply(std::function <T(T)> f);
+        Tensor<T> apply(std::function <T(T)> f) const;
         Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue);
 
         Tensor<T> operator+(const Tensor<T> & rhs);
