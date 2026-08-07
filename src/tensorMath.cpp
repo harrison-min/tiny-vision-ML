@@ -133,7 +133,7 @@ Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::
 
 
 template<typename T>
-Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) {
+Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) const {
     assert ((dataSize == rhs.getSize() && order == rhs.getOrder()) || 
         (dimension[order - 1] == rhs.dimension[0] && rhs.getOrder() == 1));
 
@@ -166,7 +166,7 @@ Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) {
 }
 
 template<typename T>
-Tensor<T> Tensor<T>::operator*(double rhs){
+Tensor<T> Tensor<T>::operator*(double rhs) const{
     Tensor<T> product (order, dimension);
     for (size_t i = 0; i < dataSize; ++i) {
         product[i] = data [i] * rhs;
@@ -176,7 +176,7 @@ Tensor<T> Tensor<T>::operator*(double rhs){
 }
 
 template<typename T>
-Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) {
+Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) const{
     assert(order == rhs.getOrder() && order >= 2);
 
     int numMatrices = 1;
@@ -230,12 +230,12 @@ const T& Tensor<T>::operator[](int index) const{
 }
 
 template<typename T>
-T& Tensor<T>::operator[](int index){
+T& Tensor<T>::operator[](int index) {
     return data[index];
 }
 
 template <typename T>
-bool Tensor<T>::operator==(const Tensor<T> & rhs) {
+bool Tensor<T>::operator==(const Tensor<T> & rhs) const{
     static const T epsilon = std::numeric_limits<T>::epsilon() * 10;
     if (dataSize != rhs.getSize() && dimension != rhs.getDimension()) {
         return false;
@@ -251,7 +251,7 @@ bool Tensor<T>::operator==(const Tensor<T> & rhs) {
 }
 
 template <typename T>
-bool Tensor<T>::operator!=(const Tensor<T> & rhs) {
+bool Tensor<T>::operator!=(const Tensor<T> & rhs) const{
     return !(*this == rhs);
 }
 

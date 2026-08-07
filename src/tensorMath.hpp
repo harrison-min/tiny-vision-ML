@@ -16,13 +16,15 @@ class Tensor {
         Tensor<T> apply(std::function <T(T)> f) const;
         Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue);
 
-        Tensor<T> operator+(const Tensor<T> & rhs);
-        Tensor<T> operator*(double rhs);
-        Tensor<T> operator*(const Tensor<T> & rhs);
+        Tensor<T> operator+(const Tensor<T> & rhs) const;
+        Tensor<T> operator*(double rhs) const;
+        Tensor<T> operator*(const Tensor<T> & rhs) const;
         const T& operator[](int index) const;
-        T& operator[](int index);
-        bool operator==(const Tensor<T> & rhs);
-        bool operator!=(const Tensor<T> & rhs);
+        T& operator[](int index) ;
+        bool operator==(const Tensor<T> & rhs) const;
+        bool operator!=(const Tensor<T> & rhs) const;
+
+
 
         size_t getSize() const;
         int getOrder() const;
