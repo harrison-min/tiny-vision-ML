@@ -440,5 +440,65 @@ LayerTestSuite::LayerTestSuite() {
 
 void LayerTestSuite::run() {
     std::cout << "\n\nRUNNING LAYER TEST SUITE:\n\n";
+    if (forwardPassTest()) numPassed ++;
     assert (numTests == numPassed);
+}
+
+bool LayerTestSuite::forwardPassTest() {
+    const int inputSize = 3;
+    const int outputSize = 2;
+    DenseLayer<double> doubleLayer(inputSize, outputSize);
+    DenseLayer<float> floatLayer(inputSize, outputSize);
+
+    Tensor<double> doubleWeights (2, {inputSize, outputSize});
+    Tensor<float> floatWeights (2, {inputSize, outputSize});
+
+    Tensor<double> doubleBias (1, {outputSize});
+    Tensor<float> floatBias (1, {outputSize});
+
+    Tensor<double> doubleInput(2, {1, inputSize});
+    Tensor<float> floatInput(2, {1, inputSize});
+
+    Tensor<double> doubleExpectedOutput(2, {1,outputSize});
+    Tensor<float> floatExpectedOutput(2, {1,outputSize});
+
+    for (size_t i = 0; i < doubleWeights.getSize(); ++ i) {
+        doubleWeights[i] = -1.0;
+        floatWeights[i] = -1.0;
+    }
+
+    for (size_t i = 0; i < doubleBias.getSize(); ++ i) {
+        doubleBias [i] = 1.5;
+        floatBias [i] = 1.5;
+        doubleExpectedOutput[i] = -1.5;
+        floatExpectedOutput[i] = -1.5;
+    }
+
+    for (size_t i = 0; i < doubleInput.getSize(); ++ i) {
+        doubleInput [i] = 1.0;
+        floatInput [i] = 1.0;
+    }
+    doubleLayer.updateBias(doubleBias);
+    doubleLayer.updateWeights(doubleWeights);
+    floatLayer.updateBias(floatBias);
+    floatLayer.updateWeights(floatWeights);
+    Tensor<double> doubleOutput = doubleLayer.forward(doubleInput);
+    Tensor<float> floatOutput = floatLayer.forward(floatInput);
+
+    bool testPassed = true;
+    if (doubleOutput != doubleExpectedOutput) {
+        std::cout << "FAIL: forwardPassTest (double output tensor does not match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatOutput != floatExpectedOutput) {
+        std::cout << "FAIL: forwardPassTest (float output tensor does not match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardPassTest\n";
+    }
+
+    return testPassed;
 }

@@ -242,7 +242,7 @@ T& Tensor<T>::operator[](int index) {
 template <typename T>
 bool Tensor<T>::operator==(const Tensor<T> & rhs) const{
     static const T epsilon = std::numeric_limits<T>::epsilon() * 10;
-    if (dataSize != rhs.getSize() && dimension != rhs.getDimension()) {
+    if (dataSize != rhs.getSize() || dimension != rhs.getDimension()) {
         return false;
     }
 

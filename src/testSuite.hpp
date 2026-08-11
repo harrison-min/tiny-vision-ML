@@ -30,6 +30,7 @@ class TensorTestSuite : public TestSuite{
 };
 
 class LayerTestSuite :public TestSuite {
+        bool forwardPassTest();
     public: 
         LayerTestSuite();
         void run() override;

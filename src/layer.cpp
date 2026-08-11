@@ -5,7 +5,7 @@
 
 template <typename T>
 ActivationLayer<T>::ActivationLayer(int inputSize, const std::function <T(T)> & actFunc, const std::function <T(T)> & derFunc):
-    mostRecentInput(1,{inputSize}){
+    mostRecentInput(2,{1,inputSize}){
     activationFunction = actFunc;
     derivativeOfActivationFunction = derFunc;
     for (size_t i = 0; i < mostRecentInput.getSize(); ++ i) {
@@ -22,7 +22,7 @@ Tensor<T> ActivationLayer<T>::forward (const Tensor<T> & input) {
 template <typename T>
 Tensor<T> ActivationLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
     Tensor<T> derivative = mostRecentInput.apply(derivativeOfActivationFunction);
-    return gradient * derivative;
+    return TensorCalculator::hadamardProduct(gradient,derivative);
 }
 
 
@@ -30,7 +30,7 @@ template<typename T>
 DenseLayer<T>::DenseLayer(int inputSize, int outputSize):
     weights(2, {inputSize, outputSize}),
     bias(1, {outputSize}),
-    mostRecentInput (1, {inputSize}) {
+    mostRecentInput (2, {1, inputSize}) {
     
         std::random_device rd;
         std::mt19937 gen(rd());
