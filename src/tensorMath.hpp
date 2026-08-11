@@ -14,7 +14,7 @@ class Tensor {
         Tensor(int tempOrder, const std::vector<int>& tempDimension);
         Tensor<T> transpose();
         Tensor<T> apply(std::function <T(T)> f) const;
-        Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue);
+        Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) const;
 
         Tensor<T> operator+(const Tensor<T> & rhs) const;
         Tensor<T> operator-(const Tensor<T> & rhs) const;
@@ -24,8 +24,6 @@ class Tensor {
         T& operator[](int index) ;
         bool operator==(const Tensor<T> & rhs) const;
         bool operator!=(const Tensor<T> & rhs) const;
-
-
 
         size_t getSize() const;
         int getOrder() const;
@@ -42,6 +40,9 @@ namespace TensorCalculator {
 
     template <typename T>
     T reLU(T input);
+
+    template <typename T>
+    T derivativeReLU (T input);
 
     template<typename T>
     T sum(T n1, T n2);

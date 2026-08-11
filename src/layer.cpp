@@ -72,12 +72,22 @@ Tensor<T> DenseLayer<T>::forward(const Tensor<T> & input) {
 template <typename T>
 Tensor<T> DenseLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
     Tensor<T> dWeights = mostRecentInput.transpose() * gradient; 
-    Tensor<T> dBias = gradient; 
+    Tensor<T> dBias = gradient.collapse({0}, TensorCalculator::sum<T>, 0.0); 
     Tensor<T> newGradient = gradient * weights.transpose();
 
     weights = weights - (dWeights * learningRate);
     bias = bias - (dBias * learningRate);
     return newGradient;
+}
+
+template <typename T>
+Tensor<T> DenseLayer<T>::getWeights() {
+    return weights;
+}
+
+template <typename T>
+Tensor<T> DenseLayer<T>::getBias() {
+    return bias;
 }
 
 template class ActivationLayer<double>;

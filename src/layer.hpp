@@ -22,6 +22,9 @@ class DenseLayer : public Layer<T>{
         Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
         void updateBias (const Tensor<T> & newBias);
         void updateWeights (const Tensor<T> & newWeights); 
+
+        Tensor<T> getWeights();
+        Tensor<T> getBias();
 };
 
 template <typename T>

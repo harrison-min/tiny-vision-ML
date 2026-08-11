@@ -61,14 +61,13 @@ Tensor<T> Tensor<T>::apply(std::function <T(T)> f) const{
 }
 
 template <typename T>
-Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) {
+Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) const{
     //calculate strides of input 
     std::vector<int> inputStrides(order);
     inputStrides[order - 1] = 1;
     for (int i = order - 2; i >=0; -- i) {
         inputStrides[i] = inputStrides[i + 1] * dimension[i + 1];
     }
-
 
     //find the dimensions we want to keep and populate the outputDimension vector
     int outputDimensionSize = order - collapsingDimIndex.size();
@@ -353,6 +352,11 @@ T TensorCalculator::reLU(T input) {
     return (input + std::abs(input)) * static_cast<T>(0.5);
 }
 
+template <typename T>
+T TensorCalculator::derivativeReLU (T input) {
+    return static_cast<T>(input > 0.0 ? 1.0 : 0.0);
+}
+
 template<typename T>
 T TensorCalculator::sum(T n1, T n2) {
     return n1 + n2;
@@ -365,6 +369,8 @@ namespace TensorCalculator {
     template Tensor<double> hadamardProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double reLU(double input);
     template float reLU(float input);
+    template double derivativeReLU(double input);
+    template float derivativeReLU(float input);
     template double sum(double n1, double n2);
     template float sum(float n1, float n2);
 }
