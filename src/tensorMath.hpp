@@ -17,6 +17,7 @@ class Tensor {
         Tensor<T> collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue);
 
         Tensor<T> operator+(const Tensor<T> & rhs) const;
+        Tensor<T> operator-(const Tensor<T> & rhs) const;
         Tensor<T> operator*(double rhs) const;
         Tensor<T> operator*(const Tensor<T> & rhs) const;
         const T& operator[](int index) const;

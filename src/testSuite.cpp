@@ -1,14 +1,33 @@
 #include "testSuite.hpp"
+#include "layer.hpp"
 #include <iostream>
 #include <limits>
 
-static const int TOTAL_NUMBER_OF_TESTS = 8;
+//==================================================================
+//  TENSOR TESTS
+//==================================================================
+
+static const int TOTAL_NUMBER_OF_TENSOR_TESTS = 8;
 static const double doubleEpsilon = std::numeric_limits<double>::epsilon() * 10;
 static const float floatEpsilon = std::numeric_limits<double>::epsilon() * 10;
 
 TensorTestSuite::TensorTestSuite() {
     numPassed = 0;
-    numTests = TOTAL_NUMBER_OF_TESTS;
+    numTests = TOTAL_NUMBER_OF_TENSOR_TESTS;
+}
+
+void TensorTestSuite::run() {
+    std::cout << "\n\nRUNNING TENSOR TEST SUITE:\n\n";
+    if (innerProductTest()) numPassed ++;
+    if (transposeTest()) numPassed ++;
+    if (matrixAdditionTest()) numPassed ++;
+    if (matrixMultiplicationTest()) numPassed ++;
+    if (hadamardProductTest()) numPassed ++;
+    if (biasAdditionTest()) numPassed ++;
+    if (ReLUTest()) numPassed ++;
+    if (sumCollapseTest()) numPassed ++;
+
+    assert(numPassed == numTests);
 }
 
 template <typename T>
@@ -407,15 +426,19 @@ bool TensorTestSuite::sumCollapseTest(){
     return testPassed;
 }
 
-void TensorTestSuite::run() {
-    if (innerProductTest()) numPassed ++;
-    if (transposeTest()) numPassed ++;
-    if (matrixAdditionTest()) numPassed ++;
-    if (matrixMultiplicationTest()) numPassed ++;
-    if (hadamardProductTest()) numPassed ++;
-    if (biasAdditionTest()) numPassed ++;
-    if (ReLUTest()) numPassed ++;
-    if (sumCollapseTest()) numPassed ++;
 
-    assert(numPassed == numTests);
+//==================================================================
+//  LAYER TESTS
+//==================================================================
+
+static const int TOTAL_NUMBER_OF_LAYER_TESTS = 3;
+
+LayerTestSuite::LayerTestSuite() {
+    numPassed = 0;
+    numTests = TOTAL_NUMBER_OF_LAYER_TESTS;
+}
+
+void LayerTestSuite::run() {
+    std::cout << "\n\nRUNNING LAYER TEST SUITE:\n\n";
+    assert (numTests == numPassed);
 }

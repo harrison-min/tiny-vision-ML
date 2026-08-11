@@ -165,6 +165,11 @@ Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) const {
     return sum;
 }
 
+template<typename T> 
+Tensor<T> Tensor<T>::operator-(const Tensor<T> & rhs) const {
+    return *this + (rhs * static_cast<T>(-1));
+}
+
 template<typename T>
 Tensor<T> Tensor<T>::operator*(double rhs) const{
     Tensor<T> product (order, dimension);

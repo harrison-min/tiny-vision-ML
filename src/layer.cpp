@@ -4,26 +4,33 @@
 #include <cmath>
 
 template <typename T>
-ActivationLayer<T>::ActivationLayer(const std::function<T(T)> & func){
-    activationFunction = func;
+ActivationLayer<T>::ActivationLayer(int inputSize, const std::function <T(T)> & actFunc, const std::function <T(T)> & derFunc):
+    mostRecentInput(1,{inputSize}){
+    activationFunction = actFunc;
+    derivativeOfActivationFunction = derFunc;
+    for (size_t i = 0; i < mostRecentInput.getSize(); ++ i) {
+        mostRecentInput[i] = 0;
+    }
 }
 
 template <typename T>
 Tensor<T> ActivationLayer<T>::forward (const Tensor<T> & input) {
+    mostRecentInput = input;
     return input.apply(activationFunction);
 }
 
 template <typename T>
 Tensor<T> ActivationLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
-    assert(false); // ensures this crashes until we actually implement
-    return gradient;
+    Tensor<T> derivative = mostRecentInput.apply(derivativeOfActivationFunction);
+    return gradient * derivative;
 }
 
 
 template<typename T>
 DenseLayer<T>::DenseLayer(int inputSize, int outputSize):
     weights(2, {inputSize, outputSize}),
-    bias(1, {outputSize}) {
+    bias(1, {outputSize}),
+    mostRecentInput (1, {inputSize}) {
     
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -38,17 +45,39 @@ DenseLayer<T>::DenseLayer(int inputSize, int outputSize):
         for (size_t i = 0; i < bias.getSize(); ++ i) {
             bias[i] = 0;
         }
+        
+        for (size_t i = 0; i < mostRecentInput.getSize(); ++ i) {
+            mostRecentInput[i] = 0;
+        }
+}
+
+template <typename T>
+void DenseLayer<T>::updateBias (const Tensor<T> & newBias) {
+    assert(newBias.getDimension() == bias.getDimension());
+    bias = newBias;
+}
+
+template <typename T>
+void DenseLayer<T>::updateWeights (const Tensor<T> & newWeights) {
+    assert(newWeights.getDimension() == weights.getDimension());
+    weights = newWeights;
 }
 
 template <typename T>
 Tensor<T> DenseLayer<T>::forward(const Tensor<T> & input) {
+    mostRecentInput = input;
     return (input * weights) + bias;
 }
 
 template <typename T>
 Tensor<T> DenseLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
-    assert(false); // ensures this crashes until we actually implement
-    return gradient;
+    Tensor<T> dWeights = mostRecentInput.transpose() * gradient; 
+    Tensor<T> dBias = gradient; 
+    Tensor<T> newGradient = gradient * weights.transpose();
+
+    weights = weights - (dWeights * learningRate);
+    bias = bias - (dBias * learningRate);
+    return newGradient;
 }
 
 template class ActivationLayer<double>;
