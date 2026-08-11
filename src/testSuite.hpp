@@ -12,9 +12,9 @@ class TestSuite {
         virtual ~TestSuite() = default;
 };
 
+template <typename T>
 class TensorTestSuite : public TestSuite{
     private:
-        template <typename T>
         Tensor<T> generateTestTensor(const std::vector<int> & dimension);
         bool innerProductTest();
         bool transposeTest();
@@ -29,6 +29,7 @@ class TensorTestSuite : public TestSuite{
         TensorTestSuite();
 };
 
+template <typename T>
 class LayerTestSuite :public TestSuite {
         bool forwardDenseLayerTest();
         bool backwardDenseLayerTest();
