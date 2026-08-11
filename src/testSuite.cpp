@@ -1,14 +1,33 @@
 #include "testSuite.hpp"
+#include "layer.hpp"
 #include <iostream>
 #include <limits>
 
-static const int TOTAL_NUMBER_OF_TESTS = 8;
+//==================================================================
+//  TENSOR TESTS
+//==================================================================
+
+static const int TOTAL_NUMBER_OF_TENSOR_TESTS = 8;
 static const double doubleEpsilon = std::numeric_limits<double>::epsilon() * 10;
 static const float floatEpsilon = std::numeric_limits<double>::epsilon() * 10;
 
 TensorTestSuite::TensorTestSuite() {
     numPassed = 0;
-    numTests = TOTAL_NUMBER_OF_TESTS;
+    numTests = TOTAL_NUMBER_OF_TENSOR_TESTS;
+}
+
+void TensorTestSuite::run() {
+    std::cout << "\n\nRUNNING TENSOR TEST SUITE:\n\n";
+    if (innerProductTest()) numPassed ++;
+    if (transposeTest()) numPassed ++;
+    if (matrixAdditionTest()) numPassed ++;
+    if (matrixMultiplicationTest()) numPassed ++;
+    if (hadamardProductTest()) numPassed ++;
+    if (biasAdditionTest()) numPassed ++;
+    if (ReLUTest()) numPassed ++;
+    if (sumCollapseTest()) numPassed ++;
+
+    assert(numPassed == numTests);
 }
 
 template <typename T>
@@ -407,15 +426,293 @@ bool TensorTestSuite::sumCollapseTest(){
     return testPassed;
 }
 
-void TensorTestSuite::run() {
-    if (innerProductTest()) numPassed ++;
-    if (transposeTest()) numPassed ++;
-    if (matrixAdditionTest()) numPassed ++;
-    if (matrixMultiplicationTest()) numPassed ++;
-    if (hadamardProductTest()) numPassed ++;
-    if (biasAdditionTest()) numPassed ++;
-    if (ReLUTest()) numPassed ++;
-    if (sumCollapseTest()) numPassed ++;
 
-    assert(numPassed == numTests);
+//==================================================================
+//  LAYER TESTS
+//==================================================================
+
+static const int TOTAL_NUMBER_OF_LAYER_TESTS = 4;
+
+LayerTestSuite::LayerTestSuite() {
+    numPassed = 0;
+    numTests = TOTAL_NUMBER_OF_LAYER_TESTS;
+}
+
+void LayerTestSuite::run() {
+    std::cout << "\n\nRUNNING LAYER TEST SUITE:\n\n";
+    if (forwardDenseLayerTest()) numPassed ++;
+    if (backwardDenseLayerTest()) numPassed ++;
+    if (forwardActivationLayerTest()) numPassed ++;
+    if (backwardActivationLayerTest()) numPassed ++;
+    assert (numTests == numPassed);
+}
+
+bool LayerTestSuite::forwardDenseLayerTest() {
+    const int inputSize = 3;
+    const int outputSize = 2;
+    const int batchSize = 5;
+    DenseLayer<double> doubleLayer(inputSize, outputSize);
+    DenseLayer<float> floatLayer(inputSize, outputSize);
+
+    Tensor<double> doubleWeights (2, {inputSize, outputSize});
+    Tensor<float> floatWeights (2, {inputSize, outputSize});
+
+    Tensor<double> doubleBias (1, {outputSize});
+    Tensor<float> floatBias (1, {outputSize});
+
+    Tensor<double> doubleInput(2, {batchSize, inputSize});
+    Tensor<float> floatInput(2, {batchSize, inputSize});
+
+    Tensor<double> doubleExpectedOutput(2, {batchSize,outputSize});
+    Tensor<float> floatExpectedOutput(2, {batchSize,outputSize});
+
+    for (size_t i = 0; i < doubleWeights.getSize(); ++ i) {
+        doubleWeights[i] = -1.0;
+        floatWeights[i] = -1.0;
+    }
+
+    for (size_t i = 0; i < doubleBias.getSize(); ++ i) {
+        doubleBias [i] = 1.5;
+        floatBias [i] = 1.5;
+    }
+
+    for (size_t i = 0; i < doubleExpectedOutput.getSize(); ++ i) {
+        doubleExpectedOutput[i] = -1.5;
+        floatExpectedOutput[i] = -1.5;
+    }
+
+    for (size_t i = 0; i < doubleInput.getSize(); ++ i) {
+        doubleInput [i] = 1.0;
+        floatInput [i] = 1.0;
+    }
+    doubleLayer.updateBias(doubleBias);
+    doubleLayer.updateWeights(doubleWeights);
+    floatLayer.updateBias(floatBias);
+    floatLayer.updateWeights(floatWeights);
+    Tensor<double> doubleOutput = doubleLayer.forward(doubleInput);
+    Tensor<float> floatOutput = floatLayer.forward(floatInput);
+
+    bool testPassed = true;
+    if (doubleOutput != doubleExpectedOutput) {
+        std::cout << "FAIL: forwardDenseLayerTest (double output tensor does not match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatOutput != floatExpectedOutput) {
+        std::cout << "FAIL: forwardDenseLayerTest (float output tensor does not match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardDenseLayerTest\n";
+    }
+
+    return testPassed;
+}
+   
+bool LayerTestSuite::backwardDenseLayerTest() {
+    const int inputSize = 3;
+    const int outputSize = 2;
+    const int batchSize = 5;
+    const float floatLearningRate = 1.0;
+    const double doubleLearningRate = 1.0;
+
+    DenseLayer<double> doubleLayer(inputSize, outputSize);
+    DenseLayer<float> floatLayer(inputSize, outputSize);
+
+    Tensor<double> doubleWeights (2, {inputSize, outputSize});
+    Tensor<float> floatWeights (2, {inputSize, outputSize});
+
+    Tensor<double> doubleBias (1, {outputSize});
+    Tensor<float> floatBias (1, {outputSize});
+
+    Tensor<double> doubleInput(2, {batchSize, inputSize});
+    Tensor<float> floatInput(2, {batchSize, inputSize});
+
+    Tensor<double> doubleGradient(2, {batchSize, outputSize});
+    Tensor<float> floatGradient(2, {batchSize, outputSize});
+
+    Tensor<double> doubleExpectedOutputGradient(2, {batchSize, inputSize});
+    Tensor<double> doubleExpectedWeights(2, {inputSize, outputSize});
+    Tensor<double> doubleExpectedBias (1, {outputSize});
+    Tensor<float> floatExpectedOutputGradient(2, {batchSize, inputSize});
+    Tensor<float> floatExpectedWeights(2, {inputSize, outputSize});
+    Tensor<float> floatExpectedBias (1, {outputSize});
+
+    for (size_t i = 0; i < doubleWeights.getSize(); ++ i) {
+        doubleWeights[i] = -1.0;
+        floatWeights[i] = -1.0;
+    }
+
+    for (size_t i = 0; i < doubleGradient.getSize(); ++ i) {
+        doubleGradient[i] = 1.0;
+        floatGradient[i] = 1.0;
+    }
+
+    for (size_t i = 0; i < doubleBias.getSize(); ++ i) {
+        doubleBias [i] = 1.5;
+        floatBias [i] = 1.5;
+        double doubleDB = 1.0 * batchSize;
+        float floatDB = 1.0 * batchSize;
+        doubleExpectedBias[i] = doubleBias[i] - doubleDB * doubleLearningRate;
+        floatExpectedBias[i] = floatBias[i] - floatDB * floatLearningRate;
+    }
+
+    for (size_t i = 0; i < doubleInput.getSize(); ++ i) {
+        doubleInput [i] = 1.0;
+        floatInput [i] = 1.0;
+    }
+
+    doubleExpectedOutputGradient = doubleGradient * doubleWeights.transpose();
+    floatExpectedOutputGradient = floatGradient * floatWeights.transpose();
+
+    Tensor<double> doubleDW = doubleInput.transpose() * doubleGradient;
+    Tensor<float> floatDW = floatInput.transpose() * floatGradient;
+
+    doubleExpectedWeights = doubleWeights - (doubleDW * doubleLearningRate);
+    floatExpectedWeights = floatWeights - (floatDW * floatLearningRate);
+
+    doubleLayer.updateBias(doubleBias);
+    doubleLayer.updateWeights(doubleWeights);
+    floatLayer.updateBias(floatBias);
+    floatLayer.updateWeights(floatWeights);
+
+    doubleLayer.forward(doubleInput);
+    Tensor<double> doubleResultGradient = doubleLayer.backward(doubleGradient, doubleLearningRate);
+    floatLayer.forward(floatInput);
+    Tensor<float> floatResultGradient = floatLayer.backward(floatGradient, floatLearningRate);
+
+    bool testPassed = true;
+    if (doubleResultGradient != doubleExpectedOutputGradient) {
+        std::cout << "FAIL: backwardDenseLayerTest (double gradient doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (doubleLayer.getWeights()!= doubleExpectedWeights) {
+        std::cout << "FAIL: backwardDenseLayerTest (double weights doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (doubleLayer.getBias()!= doubleExpectedBias) {
+        std::cout << "FAIL: backwardDenseLayerTest (double bias doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatResultGradient != floatExpectedOutputGradient) {
+        std::cout << "FAIL: backwardDenseLayerTest (float gradient doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatLayer.getWeights()!= floatExpectedWeights) {
+        std::cout << "FAIL: backwardDenseLayerTest (float weights doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatLayer.getBias()!= floatExpectedBias) {
+        std::cout << "FAIL: backwardDenseLayerTest (float bias doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: backwardDenseLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+bool LayerTestSuite::forwardActivationLayerTest() {
+    const int inputSize = 5;
+    ActivationLayer<double> doubleLayer (inputSize, TensorCalculator::reLU<double>, TensorCalculator::derivativeReLU<double>);
+    ActivationLayer<float> floatLayer (inputSize, TensorCalculator::reLU<float>, TensorCalculator::derivativeReLU<float>);
+
+    Tensor<double> doubleInput (2, {1, inputSize});
+    Tensor<float> floatInput (2, {1, inputSize});
+    Tensor<double> doubleExpected (2, {1, inputSize});
+    Tensor<float> floatExpected (2, {1, inputSize});
+
+    const int size = static_cast<int>(doubleInput.getSize());
+    for (int i = 0; i < size; ++ i) {
+        doubleInput [i] = i - size/2;
+        floatInput [i] = i - size/2;
+        if (i - size/2 <= 0) {
+            doubleExpected[i] = 0.0;
+            floatExpected[i] = 0.0;
+        } else {
+            doubleExpected[i] = i - size/2;
+            floatExpected[i] = i - size/2;
+        }
+    }
+
+    Tensor<double> doubleResult = doubleLayer.forward(doubleInput);
+    Tensor<float> floatResult = floatLayer.forward(floatInput);
+
+    bool testPassed = true;
+    if (doubleResult != doubleExpected) {
+        std::cout << "FAIL: forwardActivationLayerTest (double result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatResult != floatExpected) {
+        std::cout << "FAIL: forwardActivationLayerTest (float result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardActivationLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+bool LayerTestSuite::backwardActivationLayerTest() {
+    const int inputSize = 5;
+    ActivationLayer<double> doubleLayer (inputSize, TensorCalculator::reLU<double>, TensorCalculator::derivativeReLU<double>);
+    ActivationLayer<float> floatLayer (inputSize, TensorCalculator::reLU<float>, TensorCalculator::derivativeReLU<float>);
+
+    Tensor<double> doubleInput (2, {1, inputSize});
+    Tensor<float> floatInput (2, {1, inputSize});
+    Tensor<double> doubleGradient (2, {1, inputSize});
+    Tensor<float> floatGradient (2, {1, inputSize});
+    Tensor<double> doubleExpected (2, {1, inputSize});
+    Tensor<float> floatExpected (2, {1, inputSize});
+
+    const int size = static_cast<int>(doubleInput.getSize());
+    for (int i = 0; i < size; ++ i) {
+        doubleInput [i] = i - size/2;
+        floatInput [i] = i - size/2;
+        doubleGradient[i] = i;
+        floatGradient[i] = i;
+        double doubleDerivativeValue = 0.0;
+        float floatDerivativeValue = 0.0;
+        if (i - size/2 > 0) {
+            doubleDerivativeValue = 1.0;
+            floatDerivativeValue = 1.0;
+        } 
+        doubleExpected[i]  = doubleDerivativeValue * doubleGradient[i];
+        floatExpected[i]  = floatDerivativeValue * floatGradient[i];
+    }
+
+    const double doubleLearningRate = 1.0; // these dont really apply to this layer
+    const float floatLearningRate = 1.0;
+    doubleLayer.forward(doubleInput);
+    floatLayer.forward(floatInput);
+    Tensor<double> doubleResult = doubleLayer.backward(doubleGradient, doubleLearningRate);
+    Tensor<float> floatResult = floatLayer.backward(floatGradient, floatLearningRate);
+
+    bool testPassed = true;
+    if (doubleResult != doubleExpected) {
+        std::cout << "FAIL: backwardActivationLayerTest (double result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (floatResult != floatExpected) {
+        std::cout << "FAIL: backwardActivationLayerTest (float result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: backwardActivationLayerTest\n";
+    }
+
+    return testPassed;
 }

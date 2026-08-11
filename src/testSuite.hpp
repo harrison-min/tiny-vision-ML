@@ -29,3 +29,12 @@ class TensorTestSuite : public TestSuite{
         TensorTestSuite();
 };
 
+class LayerTestSuite :public TestSuite {
+        bool forwardDenseLayerTest();
+        bool backwardDenseLayerTest();
+        bool forwardActivationLayerTest();
+        bool backwardActivationLayerTest();
+    public: 
+        LayerTestSuite();
+        void run() override;
+};

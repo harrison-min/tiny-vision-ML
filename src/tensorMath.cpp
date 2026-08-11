@@ -52,7 +52,7 @@ Tensor<T> Tensor<T>::transpose() {
 }
 
 template <typename T>
-Tensor<T> Tensor<T>::apply(std::function <T(T)> f) {
+Tensor<T> Tensor<T>::apply(std::function <T(T)> f) const{
     Tensor<T> newTensor(order, dimension);
     for (size_t i = 0; i < dataSize; ++ i) {
         newTensor[i] = f(data[i]);
@@ -61,14 +61,13 @@ Tensor<T> Tensor<T>::apply(std::function <T(T)> f) {
 }
 
 template <typename T>
-Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) {
+Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::function <T(T, T)> f, T initValue) const{
     //calculate strides of input 
     std::vector<int> inputStrides(order);
     inputStrides[order - 1] = 1;
     for (int i = order - 2; i >=0; -- i) {
         inputStrides[i] = inputStrides[i + 1] * dimension[i + 1];
     }
-
 
     //find the dimensions we want to keep and populate the outputDimension vector
     int outputDimensionSize = order - collapsingDimIndex.size();
@@ -133,7 +132,7 @@ Tensor<T> Tensor<T>::collapse (const std::vector<int>& collapsingDimIndex, std::
 
 
 template<typename T>
-Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) {
+Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) const {
     assert ((dataSize == rhs.getSize() && order == rhs.getOrder()) || 
         (dimension[order - 1] == rhs.dimension[0] && rhs.getOrder() == 1));
 
@@ -165,8 +164,13 @@ Tensor<T> Tensor<T>::operator+(const Tensor<T> & rhs) {
     return sum;
 }
 
+template<typename T> 
+Tensor<T> Tensor<T>::operator-(const Tensor<T> & rhs) const {
+    return *this + (rhs * static_cast<T>(-1));
+}
+
 template<typename T>
-Tensor<T> Tensor<T>::operator*(double rhs){
+Tensor<T> Tensor<T>::operator*(double rhs) const{
     Tensor<T> product (order, dimension);
     for (size_t i = 0; i < dataSize; ++i) {
         product[i] = data [i] * rhs;
@@ -176,7 +180,7 @@ Tensor<T> Tensor<T>::operator*(double rhs){
 }
 
 template<typename T>
-Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) {
+Tensor<T> Tensor<T>::operator*(const Tensor<T> & rhs) const{
     assert(order == rhs.getOrder() && order >= 2);
 
     int numMatrices = 1;
@@ -230,14 +234,14 @@ const T& Tensor<T>::operator[](int index) const{
 }
 
 template<typename T>
-T& Tensor<T>::operator[](int index){
+T& Tensor<T>::operator[](int index) {
     return data[index];
 }
 
 template <typename T>
-bool Tensor<T>::operator==(const Tensor<T> & rhs) {
+bool Tensor<T>::operator==(const Tensor<T> & rhs) const{
     static const T epsilon = std::numeric_limits<T>::epsilon() * 10;
-    if (dataSize != rhs.getSize() && dimension != rhs.getDimension()) {
+    if (dataSize != rhs.getSize() || dimension != rhs.getDimension()) {
         return false;
     }
 
@@ -251,7 +255,7 @@ bool Tensor<T>::operator==(const Tensor<T> & rhs) {
 }
 
 template <typename T>
-bool Tensor<T>::operator!=(const Tensor<T> & rhs) {
+bool Tensor<T>::operator!=(const Tensor<T> & rhs) const{
     return !(*this == rhs);
 }
 
@@ -348,6 +352,11 @@ T TensorCalculator::reLU(T input) {
     return (input + std::abs(input)) * static_cast<T>(0.5);
 }
 
+template <typename T>
+T TensorCalculator::derivativeReLU (T input) {
+    return static_cast<T>(input > 0.0 ? 1.0 : 0.0);
+}
+
 template<typename T>
 T TensorCalculator::sum(T n1, T n2) {
     return n1 + n2;
@@ -360,6 +369,8 @@ namespace TensorCalculator {
     template Tensor<double> hadamardProduct(const Tensor<double>& tensor1, const Tensor<double>& tensor2);
     template double reLU(double input);
     template float reLU(float input);
+    template double derivativeReLU(double input);
+    template float derivativeReLU(float input);
     template double sum(double n1, double n2);
     template float sum(float n1, float n2);
 }

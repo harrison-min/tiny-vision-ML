@@ -2,7 +2,11 @@
 #include "testSuite.hpp"
 
 int main (int argc, char ** argv) {
-    TensorTestSuite test;
-    test.run();
+    TensorTestSuite tensorTest;
+    tensorTest.run();
+
+    LayerTestSuite layerTest;
+    layerTest.run();
+    
     return 0;
 }
