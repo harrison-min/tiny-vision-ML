@@ -384,10 +384,10 @@ bool LayerTestSuite<T>::forwardDenseLayerTest() {
     }
     layer.updateBias(bias);
     layer.updateWeights(weights);
-    Tensor<T> TOutput = layer.forward(input);
+    Tensor<T> output = layer.forward(input);
 
     bool testPassed = true;
-    if (TOutput != expectedOutput) {
+    if (output != expectedOutput) {
         std::cout << "FAIL: forwardDenseLayerTest ( " << typeid(T).name() << " output tensor does not match expected)\n";
         testPassed = false;
     }

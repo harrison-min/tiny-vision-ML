@@ -1,7 +1,7 @@
 #pragma once
 #include "tensorMath.hpp"
 #include <functional>
-
+ 
 template<typename T>
 class Layer {
     public:
@@ -35,6 +35,22 @@ class ActivationLayer : public Layer<T>{
         Tensor<T> mostRecentInput;
     public:
         ActivationLayer(int inputSize, const std::function <T(T)> & actFunc, const std::function <T(T)> & derFunc);
+        Tensor<T> forward (const Tensor<T> & input) override;
+        Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
+};
+
+template <typename T>
+class ConvolutionalLayer : public Layer <T> {
+    private:
+        Tensor<T> weights;
+        Tensor<T> mostRecentInput;
+        Tensor<T> bias;
+        int height;
+        int width;
+        int inputChannels;
+        int numFilters;
+    public:
+        ConvolutionalLayer (int filterHeight, int filterWidth, int inChannels, int numberOfFilters);
         Tensor<T> forward (const Tensor<T> & input) override;
         Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
 };

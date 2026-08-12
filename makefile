@@ -1,5 +1,5 @@
 COMPILER = g++
-CFLAGS =  -Wall
+CFLAGS =  -Wall -Iinclude -MMD
 LDFLAGS = 
 LIBS = 
 TARGET = bin/main
