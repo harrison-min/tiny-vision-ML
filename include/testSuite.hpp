@@ -35,6 +35,8 @@ class LayerTestSuite :public TestSuite {
         bool backwardDenseLayerTest();
         bool forwardActivationLayerTest();
         bool backwardActivationLayerTest();
+        bool forwardConvolutionalLayerTest();
+        bool backwardConvolutionalLayerTest();
     public: 
         LayerTestSuite();
         void run() override;
