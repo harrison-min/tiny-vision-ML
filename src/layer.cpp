@@ -257,6 +257,49 @@ Tensor<T> ConvolutionalLayer<T>::getBias() {
     return bias;
 }
 
+template <typename T>
+Tensor<T> FlattenLayer<T>::forward (const Tensor<T> & input) {
+    mostRecentDimensions = input.getDimension();
+    int batchSize = mostRecentDimensions[0];
+    int vectorSize = 1;
+    for (size_t i = 1; i < mostRecentDimensions.size(); ++ i)  {
+        vectorSize *= mostRecentDimensions[i];
+    }
+
+    std::vector<int> outputDimensions = {batchSize, vectorSize};
+
+    Tensor<T> output (2, outputDimensions);
+    for (size_t i = 0; i < output.getSize(); ++ i) {
+        output[i] = input[i];
+    }
+
+    return output;
+}
+
+template <typename T>
+Tensor<T> FlattenLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
+    std::vector<int> gradientDimensions = gradient.getDimension();
+    int gradientBatchSize = gradientDimensions[0];
+    int gradientVectorSize = gradientDimensions[1];
+
+    int inputBatchSize = mostRecentDimensions[0];
+    int inputVectorSize = 1;
+    for (size_t i = 1; i < mostRecentDimensions.size(); ++ i)  {
+        inputVectorSize *= mostRecentDimensions[i];
+    }
+
+    assert(gradientBatchSize == inputBatchSize && gradientVectorSize == inputVectorSize); 
+
+    Tensor<T> newGradient (mostRecentDimensions.size(), mostRecentDimensions);
+    for (size_t i = 0; i < newGradient.getSize(); ++ i) {
+        newGradient[i] = gradient[i];
+    }
+
+    return newGradient;
+}
+
+template class FlattenLayer<double>;
+template class FlattenLayer<float>;
 template class ConvolutionalLayer<double>;
 template class ConvolutionalLayer<float>;
 template class ActivationLayer<double>;
