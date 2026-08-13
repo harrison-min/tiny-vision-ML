@@ -59,3 +59,12 @@ class ConvolutionalLayer : public Layer <T> {
         Tensor<T> getWeights();
         Tensor<T> getBias();
 };
+
+template <typename T>
+class FlattenLayer : public Layer <T> {
+    private:
+        std::vector<int> mostRecentDimensions;
+    public:
+        Tensor<T> forward (const Tensor<T> & input) override;
+        Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
+};
