@@ -335,7 +335,7 @@ bool TensorTestSuite<T>::sumCollapseTest(){
 //  LAYER TESTS
 //==================================================================
 
-static const int TOTAL_NUMBER_OF_LAYER_TESTS = 6;
+static const int TOTAL_NUMBER_OF_LAYER_TESTS = 8;
 template class LayerTestSuite<double>;
 template class LayerTestSuite<float>;
 
@@ -355,6 +355,8 @@ void LayerTestSuite<T>::run() {
     if (backwardActivationLayerTest()) numPassed ++;
     if (forwardConvolutionalLayerTest()) numPassed ++;
     if (backwardConvolutionalLayerTest()) numPassed ++;
+    if (forwardFlattenLayerTest()) numPassed ++;
+    if (backwardFlattenLayerTest()) numPassed ++;
     assert (numTests == numPassed);
 }
 
@@ -675,6 +677,65 @@ bool LayerTestSuite<T>::backwardConvolutionalLayerTest() {
 
     if (testPassed) {
         std::cout << "PASS: backwardConvolutionalLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+
+template <typename T>
+bool LayerTestSuite<T>::forwardFlattenLayerTest() {
+    std::vector<int> inputDimension = {2, 2, 3, 4};
+    Tensor<T> input (inputDimension.size(), inputDimension);
+    Tensor<T> expected (2, {2, 24});
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        input[i] = static_cast<T>(i);
+        expected[i] = static_cast<T>(i);
+    }
+
+    FlattenLayer<T> layer;
+    Tensor<T> result = layer.forward(input);
+    
+    bool testPassed = true;
+    if (result != expected) {
+        std::cout << "FAIL: forwardFlattenLayerTest ( " << typeid(T).name() << " result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardFlattenLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+template <typename T>
+bool LayerTestSuite<T>::backwardFlattenLayerTest() {
+    std::vector<int> inputDimension = {2, 2, 3, 4};
+    Tensor<T> input (inputDimension.size(), inputDimension);
+    std::vector<int> gradientDimension = {2, 24};
+    Tensor<T> gradient (gradientDimension.size(), gradientDimension);
+    Tensor<T> expected (4, {2, 2, 3, 4});
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        input[i] = static_cast<T>(i);
+        expected[i] = static_cast<T>(i);
+        gradient[i] = static_cast<T>(i);
+    }
+
+    FlattenLayer<T> layer;
+    layer.forward(input);
+    Tensor<T> result = layer.backward(gradient, 0.0);
+    
+    bool testPassed = true;
+    if (result != expected) {
+        std::cout << "FAIL: backwardFlattenLayerTest ( " << typeid(T).name() << " result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: backwardFlattenLayerTest\n";
     }
 
     return testPassed;
