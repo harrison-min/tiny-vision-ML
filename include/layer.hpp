@@ -53,4 +53,9 @@ class ConvolutionalLayer : public Layer <T> {
         ConvolutionalLayer (int filterHeight, int filterWidth, int inChannels, int numberOfFilters);
         Tensor<T> forward (const Tensor<T> & input) override;
         Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
+        void updateBias (const Tensor<T> & newBias);
+        void updateWeights (const Tensor<T> & newWeights); 
+
+        Tensor<T> getWeights();
+        Tensor<T> getBias();
 };

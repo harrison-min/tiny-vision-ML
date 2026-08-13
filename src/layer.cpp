@@ -195,7 +195,6 @@ Tensor<T> ConvolutionalLayer<T>::backward(const Tensor<T> & gradient, T learning
         newGradient[i] = 0;
     }
 
-
     for (int batch = 0; batch < batchSize; ++ batch) {
         for (int filter = 0; filter < numFilters; ++ filter) {
             for (int yCoord = 0; yCoord < outputHeight; ++ yCoord) {
@@ -234,6 +233,28 @@ Tensor<T> ConvolutionalLayer<T>::backward(const Tensor<T> & gradient, T learning
     weights = weights - (dWeights * learningRate);
 
     return newGradient;
+}
+
+template <typename T>
+void ConvolutionalLayer<T>::updateBias (const Tensor<T> & newBias) {
+    assert(bias.getDimension() == newBias.getDimension());
+    bias = newBias;
+}
+
+template <typename T>
+void ConvolutionalLayer<T>::updateWeights (const Tensor<T> & newWeights) {
+    assert(weights.getDimension() == newWeights.getDimension());
+    weights = newWeights;
+}
+
+template <typename T>
+Tensor<T> ConvolutionalLayer<T>::getWeights() {
+    return weights;
+}
+
+template <typename T>
+Tensor<T> ConvolutionalLayer<T>::getBias() {
+    return bias;
 }
 
 template class ConvolutionalLayer<double>;

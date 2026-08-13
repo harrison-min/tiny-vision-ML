@@ -335,7 +335,7 @@ bool TensorTestSuite<T>::sumCollapseTest(){
 //  LAYER TESTS
 //==================================================================
 
-static const int TOTAL_NUMBER_OF_LAYER_TESTS = 4;
+static const int TOTAL_NUMBER_OF_LAYER_TESTS = 6;
 template class LayerTestSuite<double>;
 template class LayerTestSuite<float>;
 
@@ -353,6 +353,8 @@ void LayerTestSuite<T>::run() {
     if (backwardDenseLayerTest()) numPassed ++;
     if (forwardActivationLayerTest()) numPassed ++;
     if (backwardActivationLayerTest()) numPassed ++;
+    if (forwardConvolutionalLayerTest()) numPassed ++;
+    if (backwardConvolutionalLayerTest()) numPassed ++;
     assert (numTests == numPassed);
 }
 
@@ -534,6 +536,145 @@ bool LayerTestSuite<T>::backwardActivationLayerTest() {
 
     if (testPassed) {
         std::cout << "PASS: backwardActivationLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+template <typename T>
+bool LayerTestSuite<T>::forwardConvolutionalLayerTest() {
+    const int imageHeight = 4;
+    const int imageWidth = 4;
+    const int inputChannels = 3;
+    const int numFilters = 2;
+    const int filterSize = 3;
+    const int batchSize = 1;
+
+    std::vector<int> imageDimensions = {batchSize, inputChannels, imageHeight, imageWidth};
+    Tensor<T> image (imageDimensions.size(), imageDimensions);
+    int imageSize = static_cast<int>(image.getSize());
+
+    for (int i = 0; i < imageSize; ++ i) {
+        image [i] = static_cast<T>(i);
+    }
+
+    Tensor<T> bias (1, {numFilters});
+    Tensor<T> weights (4, {numFilters, inputChannels, filterSize, filterSize});
+
+    for (size_t i = 0; i < bias.getSize(); ++ i) {
+        bias[i] = static_cast<T>(0.0);
+    }
+
+    for (size_t i = 0; i < weights.getSize(); ++ i) {
+        weights[i] = static_cast<T>(1.0);
+    }
+
+    ConvolutionalLayer<T> layer(filterSize, filterSize, inputChannels, numFilters);
+    layer.updateBias(bias);
+    layer.updateWeights(weights);
+    Tensor<T> result = layer.forward(image);
+
+    std::vector<int> expectedDimensions = {batchSize, numFilters, 2, 2};
+    Tensor<T> expected(expectedDimensions.size(), expectedDimensions);
+    T expectedValues[] = {567, 594, 675, 702, 567, 594, 675, 702};//precomputed expected values
+    for (size_t i = 0; i < expected.getSize(); ++ i) {
+        expected [i] = expectedValues [i];
+    }
+
+    bool testPassed = true;
+    if (result != expected) {
+        std::cout << "FAIL: forwardConvolutionalLayerTest ( " << typeid(T).name() << " result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardConvolutionalLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+template <typename T>
+bool LayerTestSuite<T>::backwardConvolutionalLayerTest() {
+    const T learningRate = 1.0;
+    const int imageHeight = 4;
+    const int imageWidth = 4;
+    const int inputChannels = 3;
+    const int numFilters = 2;
+    const int filterSize = 3;
+    const int batchSize = 1;
+
+    std::vector<int> imageDimensions = {batchSize, inputChannels, imageHeight, imageWidth};
+    Tensor<T> image (imageDimensions.size(), imageDimensions);
+    int imageSize = static_cast<int>(image.getSize());
+
+    for (int i = 0; i < imageSize; ++ i) {
+        image [i] = static_cast<T>(1.0);
+    }
+
+    Tensor<T> bias (1, {numFilters});
+    Tensor<T> weights (4, {numFilters, inputChannels, filterSize, filterSize});
+
+    for (size_t i = 0; i < bias.getSize(); ++ i) {
+        bias[i] = static_cast<T>(0.0);
+    }
+
+    for (size_t i = 0; i < weights.getSize(); ++ i) {
+        weights[i] = static_cast<T>(1.0);
+    }
+
+    std::vector<int> gradientDimensions = {batchSize, numFilters, 2, 2};
+    Tensor<T> gradient(gradientDimensions.size(), gradientDimensions);
+
+    for (size_t i = 0; i < gradient.getSize(); ++ i) {
+        gradient[i] = static_cast<T>(1.0);
+    }
+
+    Tensor<T> expectedBias (1, {numFilters});
+    for (size_t i = 0; i < expectedBias.getSize(); ++ i) {
+        expectedBias[i] = static_cast<T>(-4.0); //starting bias is 0.0 - gradient: 1.0 * learnign rate * 1.0
+    }
+
+    Tensor<T> expectedWeights(4, {numFilters, inputChannels, filterSize, filterSize});
+    for (size_t i = 0; i < expectedWeights.getSize(); ++ i)     {
+        expectedWeights[i] = static_cast<T>(-3.0);
+    }
+
+    Tensor<T> expectedGradient (imageDimensions.size(), imageDimensions);
+    T expectedGradientValues[] = {
+        2, 4, 4, 2,
+        4, 8, 8, 4,
+        4, 8, 8, 4,
+        2, 4, 4, 2};
+    for (size_t i = 0; i < expectedGradient.getSize(); ++ i) {
+        expectedGradient[i] = static_cast<T>(expectedGradientValues[i%(imageHeight * imageWidth)]);
+    }
+
+    ConvolutionalLayer<T> layer (filterSize, filterSize, inputChannels, numFilters);
+
+    layer.updateWeights(weights);
+    layer.updateBias(bias);
+    layer.forward(image);
+    Tensor<T> resultGradient = layer.backward (gradient, learningRate);
+
+    bool testPassed = true;
+    if (expectedGradient != resultGradient) {
+        std::cout << "FAIL: backwardConvolutionalLayerTest ( " << typeid(T).name() << " gradient doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (expectedBias != layer.getBias()) {
+        std::cout << "FAIL: backwardConvolutionalLayerTest ( " << typeid(T).name() << " bias doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (expectedWeights != layer.getWeights()) {
+        std::cout << "FAIL: backwardConvolutionalLayerTest ( " << typeid(T).name() << " weights doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: backwardConvolutionalLayerTest\n";
     }
 
     return testPassed;
