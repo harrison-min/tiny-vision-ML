@@ -298,6 +298,51 @@ Tensor<T> FlattenLayer<T>::backward(const Tensor<T> & gradient, T learningRate) 
     return newGradient;
 }
 
+template <typename T>
+MinMaxNormalizationLayer<T>::MinMaxNormalizationLayer(int min, int max):
+    minRange(min), maxRange(max), 
+    minValue(std::numeric_limits<T>::max()), maxValue (std::numeric_limits<T>::min()) {
+
+}
+
+template <typename T>
+Tensor<T> MinMaxNormalizationLayer<T>::forward (const Tensor<T> & input) {
+    assert(input.getSize() > 0);
+
+    minValue = input[0];
+    maxValue = input[0];
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        minValue = minValue > input[i] ? input[i] : minValue;
+        maxValue = maxValue < input[i] ? input[i] : maxValue;
+    }
+
+    Tensor<T> output (input.getDimension().size(), input.getDimension());
+
+    assert(maxValue - minValue != static_cast<T>(0));
+    T divisor = static_cast<T>(1.0/ (maxValue - minValue));
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        output[i] = minRange + (input[i] - minValue) * (maxRange - minRange) * divisor;
+    }
+
+    return output;
+}
+
+template <typename T>
+Tensor<T> MinMaxNormalizationLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
+    Tensor<T> newGradient (gradient.getDimension().size(), gradient.getDimension());
+
+    assert(maxRange - minRange != 0);
+    T divisor = static_cast<T>(1.0/(maxValue - minValue));
+
+    for (size_t i = 0; i < newGradient.getSize(); ++ i) {
+        newGradient[i] = gradient[i] * (maxRange - minRange) * divisor;
+    }
+
+    return newGradient;
+}
+template class MinMaxNormalizationLayer<double>;
+template class MinMaxNormalizationLayer<float>;
 template class FlattenLayer<double>;
 template class FlattenLayer<float>;
 template class ConvolutionalLayer<double>;
