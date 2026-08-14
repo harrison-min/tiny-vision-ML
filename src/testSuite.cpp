@@ -335,7 +335,7 @@ bool TensorTestSuite<T>::sumCollapseTest(){
 //  LAYER TESTS
 //==================================================================
 
-static const int TOTAL_NUMBER_OF_LAYER_TESTS = 8;
+static const int TOTAL_NUMBER_OF_LAYER_TESTS = 10;
 template class LayerTestSuite<double>;
 template class LayerTestSuite<float>;
 
@@ -347,7 +347,7 @@ LayerTestSuite<T>::LayerTestSuite() {
 
 template <typename T>
 void LayerTestSuite<T>::run() {
-    std::cout << "\n\nRUNNING TENSOR TEST SUITE:\n";
+    std::cout << "\n\nRUNNING LAYER TEST SUITE:\n";
     std::cout << "Type: " << typeid(T).name() << "\n";
     if (forwardDenseLayerTest()) numPassed ++;
     if (backwardDenseLayerTest()) numPassed ++;
@@ -357,6 +357,8 @@ void LayerTestSuite<T>::run() {
     if (backwardConvolutionalLayerTest()) numPassed ++;
     if (forwardFlattenLayerTest()) numPassed ++;
     if (backwardFlattenLayerTest()) numPassed ++;
+    if (forwardMinMaxNormalizationLayerTest()) numPassed ++;
+    if (backwardMinMaxNormalizationLayerTest()) numPassed ++;
     assert (numTests == numPassed);
 }
 
@@ -739,4 +741,71 @@ bool LayerTestSuite<T>::backwardFlattenLayerTest() {
     }
 
     return testPassed;
+}
+
+template <typename T>
+bool LayerTestSuite<T>::forwardMinMaxNormalizationLayerTest() {
+    std::vector <int> dimensions = {2, 2, 2};
+
+    Tensor<T> input (dimensions.size(), dimensions);
+    Tensor<T> expected (dimensions.size(), dimensions);
+    T expectedValues[] = {
+        0, 1.0/7.0,
+        2.0/7.0, 3.0/7.0,
+        4.0/7.0, 5.0/7.0,
+        6.0/7.0, 1.0
+    };
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        input[i] = static_cast<T>(i);
+        expected[i] = expectedValues[i];
+    }
+
+    MinMaxNormalizationLayer<T> layer;
+    Tensor<T> result = layer.forward(input);
+
+    bool testPassed = true;
+    if (result != expected) {
+        std::cout << "FAIL: forwardMinMaxNormalizationLayerTest ( " << typeid(T).name() << " result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: forwardMinMaxNormalizationLayerTest\n";
+    }
+
+    return testPassed;
+}
+
+template <typename T>
+bool LayerTestSuite<T>::backwardMinMaxNormalizationLayerTest() {
+    std::vector <int> dimensions = {2, 2, 2};
+
+    Tensor<T> input (dimensions.size(), dimensions);
+    Tensor<T> gradient(dimensions.size(), dimensions);
+    Tensor<T> expected (dimensions.size(), dimensions);
+    T expectedValue = static_cast<T>(1.0/7.0);
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        input[i] = static_cast<T>(i);
+        gradient[i] = static_cast<T> (1);
+        expected[i] = expectedValue;
+    }
+
+    MinMaxNormalizationLayer<T> layer;
+    layer.forward(input);
+    Tensor<T> result = layer.backward(gradient, 0.0);
+
+    bool testPassed = true;
+    if (result != expected) {
+        std::cout << "FAIL: backwardMinMaxNormalizationLayerTest ( " << typeid(T).name() << " result doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: backwardMinMaxNormalizationLayerTest\n";
+    }
+
+    return testPassed;
+ 
 }

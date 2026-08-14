@@ -68,3 +68,16 @@ class FlattenLayer : public Layer <T> {
         Tensor<T> forward (const Tensor<T> & input) override;
         Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
 };
+
+template <typename T>
+class MinMaxNormalizationLayer : public Layer <T> {
+    private:
+        int minRange;
+        int maxRange;
+        T minValue;
+        T maxValue;
+    public:
+        MinMaxNormalizationLayer(int min = 0, int max = 1);
+        Tensor<T> forward (const Tensor<T> & input) override;
+        Tensor<T> backward(const Tensor<T> & gradient, T learningRate) override;
+};
