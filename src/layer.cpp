@@ -81,12 +81,12 @@ Tensor<T> DenseLayer<T>::backward(const Tensor<T> & gradient, T learningRate) {
 }
 
 template <typename T>
-Tensor<T> DenseLayer<T>::getWeights() {
+const Tensor<T> & DenseLayer<T>::getWeights() const {
     return weights;
 }
 
 template <typename T>
-Tensor<T> DenseLayer<T>::getBias() {
+const Tensor<T> & DenseLayer<T>::getBias() const {
     return bias;
 }
 
@@ -248,12 +248,12 @@ void ConvolutionalLayer<T>::updateWeights (const Tensor<T> & newWeights) {
 }
 
 template <typename T>
-Tensor<T> ConvolutionalLayer<T>::getWeights() {
+const Tensor<T> & ConvolutionalLayer<T>::getWeights() const {
     return weights;
 }
 
 template <typename T>
-Tensor<T> ConvolutionalLayer<T>::getBias() {
+const Tensor<T> & ConvolutionalLayer<T>::getBias() const {
     return bias;
 }
 

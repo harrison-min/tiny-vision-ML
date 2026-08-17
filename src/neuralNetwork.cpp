@@ -16,12 +16,28 @@ void NeuralNetwork<T>::backPropagate (const Tensor<T> & gradient, T learningRate
 
 template <typename T>
 void NeuralNetwork<T>::loadWeights (const std::vector<Tensor<T>> & newWeights) {
-// TO DO	
+    int weightsIndex = 0;
+    for (size_t i = 0; i < layers.size(); ++ i) {
+        auto layer = dynamic_cast<ParameterLayer<T>*>(layers[i].get());
+        if (layer != nullptr) {
+            assert(weightsIndex < newWeights.size());
+            layer->updateWeights(newWeights[weightsIndex++]);
+        }
+    }
+    assert(weightsIndex == newWeights.size());
 }
 
 template <typename T>
 void NeuralNetwork<T>::loadBiases (const std::vector<Tensor<T>> & newBiases) {
-// TO DO	
+    int biasIndex = 0;
+    for (size_t i = 0; i < layers.size(); ++ i) {
+        auto layer = dynamic_cast<ParameterLayer<T>*>(layers[i].get());
+        if (layer != nullptr) {
+            assert(biasIndex < newBiases.size());
+            layer->updateBias(newBiases[biasIndex++]);
+        }
+    }
+    assert(biasIndex == newBiases.size());
 }
 
 template <typename T>
