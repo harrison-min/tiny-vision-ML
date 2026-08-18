@@ -11,6 +11,11 @@ int main (int argc, char ** argv) {
     LayerTestSuite<float> fLayerTest;
     dLayerTest.run();
     fLayerTest.run();
+
+    NeuralNetworkTestSuite<double> dNetworkTest;
+    NeuralNetworkTestSuite<float> fNetworkTest;
+    dNetworkTest.run();
+    fNetworkTest.run();
     
     return 0;
 }
