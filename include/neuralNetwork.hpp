@@ -15,5 +15,8 @@ class NeuralNetwork {
         void backPropagate (const Tensor<T> & gradient, T learningRate);
         void loadWeights (const std::vector<Tensor<T>> & newWeights);
         void loadBiases (const std::vector<Tensor<T>> & newBiases);
+
+        std::vector<Tensor<T>> getWeights();
+        std::vector<Tensor<T>> getBiases();
 };
 

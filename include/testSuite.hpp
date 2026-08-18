@@ -45,3 +45,11 @@ class LayerTestSuite :public TestSuite {
         LayerTestSuite();
         void run() override;
 };
+
+template <typename T>
+class NeuralNetworkTestSuite : public TestSuite {
+        bool updateWeightsAndBiasesTest();
+    public:
+        NeuralNetworkTestSuite();
+        void run() override;
+};

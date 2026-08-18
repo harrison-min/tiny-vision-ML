@@ -1,5 +1,6 @@
 #include "testSuite.hpp"
 #include "layer.hpp"
+#include "neuralNetwork.hpp"
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -808,4 +809,92 @@ bool LayerTestSuite<T>::backwardMinMaxNormalizationLayerTest() {
 
     return testPassed;
  
+}
+
+//==================================================================
+//  NEURAL NETWORK TESTS
+//==================================================================
+
+template class NeuralNetworkTestSuite<double>;
+template class NeuralNetworkTestSuite<float>;
+
+static const int TOTAL_NUMBER_OF_NEURAL_NETWORK_TESTS = 2;
+
+template <typename T>
+NeuralNetworkTestSuite<T>::NeuralNetworkTestSuite() {
+    numPassed = 0;
+    numTests = TOTAL_NUMBER_OF_LAYER_TESTS;
+}
+
+template <typename T>
+void NeuralNetworkTestSuite<T>::run() {
+
+    std::cout << "\n\nRUNNING NEURAL NETWORK TEST SUITE:\n";
+    std::cout << "Type: " << typeid(T).name() << "\n";
+
+    if(updateWeightsAndBiasesTest()) numPassed ++;
+
+    assert(numPassed == numTests);
+}
+
+template <typename T>
+bool NeuralNetworkTestSuite<T>::updateWeightsAndBiasesTest() {
+    NeuralNetwork<T> network;
+    const int size = 2;
+    
+    network.addLayer(std::make_unique<ConvolutionalLayer<T>>(1,1,1,size));
+    network.addLayer(std::make_unique<MinMaxNormalizationLayer<T>>());
+    network.addLayer(std::make_unique<FlattenLayer<T>>());
+    network.addLayer(std::make_unique<DenseLayer<T>>(1, size));
+
+    std::vector<Tensor<T>> weights;
+    std::vector<Tensor<T>> biases;
+
+    Tensor<T> convWeights (4, {size, 1, 1, 1});
+    Tensor<T> convBias (1, {size});
+    Tensor<T> denseWeights (2, {1, size});
+    Tensor<T> denseBias (1, {size});
+
+    for (size_t i = 0; i < convWeights.getSize(); ++ i) {
+        convWeights[i] = static_cast<T>(1);
+    }
+
+    for (size_t i = 0; i < convBias.getSize(); ++ i) {
+        convBias[i] = static_cast<T>(2);
+    }
+
+    for (size_t i = 0; i < denseWeights.getSize(); ++ i) {
+        denseWeights[i] = static_cast<T>(3);
+    }
+
+    for (size_t i = 0; i < denseBias.getSize(); ++ i) {
+        denseBias[i] = static_cast<T>(4);
+    }
+
+
+    weights.push_back(convWeights);
+    weights.push_back(denseWeights);
+
+    biases.push_back(convBias);
+    biases.push_back(denseBias);
+
+    network.loadWeights(weights);
+    network.loadBiases(biases);
+
+    bool testPassed = true;
+    if (network.getWeights() != weights) {
+        std::cout << "FAIL: updateWeightsAndBiasesTest ( " << typeid(T).name() << " weights doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (network.getBiases() != biases) {
+        std::cout << "FAIL: updateWeightsAndBiasesTest ( " << typeid(T).name() << " biases doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: updateWeightsAndBiasesTest\n";
+    }
+
+    return testPassed;
 }
