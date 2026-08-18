@@ -49,6 +49,8 @@ class LayerTestSuite :public TestSuite {
 template <typename T>
 class NeuralNetworkTestSuite : public TestSuite {
         bool updateWeightsAndBiasesTest();
+        bool forwardNetworkTest();
+        bool backwardNetworkTest();
     public:
         NeuralNetworkTestSuite();
         void run() override;
