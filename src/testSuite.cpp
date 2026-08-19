@@ -1,6 +1,7 @@
 #include "testSuite.hpp"
 #include "layer.hpp"
 #include "neuralNetwork.hpp"
+#include "lossFunction.hpp"
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -1033,6 +1034,61 @@ bool NeuralNetworkTestSuite<T>::backwardNetworkTest() {
 
     if (testPassed) {
         std::cout << "PASS: backwardNetworkTest\n";
+    }
+
+    return testPassed;
+}
+
+//==================================================================
+//  LOSS FUNCTION TESTS
+//==================================================================
+
+template class LossFunctionTestSuite<double>;
+template class LossFunctionTestSuite<float>;
+
+static int TOTAL_NUMBER_OF_LOSS_FUNCTION_TESTS = 1;
+
+template <typename T>
+LossFunctionTestSuite<T>::LossFunctionTestSuite() {
+    numPassed = 0;
+    numTests = TOTAL_NUMBER_OF_LOSS_FUNCTION_TESTS;
+}
+
+template <typename T>
+void LossFunctionTestSuite<T>::run() {
+    
+    std::cout << "\n\nRUNNING LOSS FUNCTION TEST SUITE:\n";
+    std::cout << "Type: " << typeid(T).name() << "\n";
+
+    if(gradientCalculationTest()) numPassed ++;
+
+    assert(numPassed == numTests);
+}
+
+template <typename T>
+bool LossFunctionTestSuite<T>::gradientCalculationTest() {
+    std::vector<int> dimension = {1, 1, 2};
+
+    Tensor<T> input (dimension.size(), dimension);
+    Tensor<T> given (dimension.size(), dimension);
+    Tensor<T> expected (dimension.size(), dimension);
+
+    for (size_t i = 0; i < input.getSize(); ++ i) {
+        input[i] = static_cast<T>(0.5);
+        given[i] = static_cast<T>(0.25);
+        expected[i] = static_cast<T>(0.25);
+    }
+
+    Tensor<T> gradient = LossFunctionCalculator::calculateGradient<T>(input, given);
+
+    bool testPassed = true;
+    if (gradient != expected) {
+        std::cout << "FAIL: gradientCalculationTest ( " << typeid(T).name() << " gradient doesnt match expected)\n";
+        testPassed = false;
+    }
+
+    if (testPassed) {
+        std::cout << "PASS: gradientCalculationTest\n";
     }
 
     return testPassed;

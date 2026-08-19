@@ -55,3 +55,12 @@ class NeuralNetworkTestSuite : public TestSuite {
         NeuralNetworkTestSuite();
         void run() override;
 };
+
+
+template <typename T>
+class LossFunctionTestSuite : public TestSuite {
+        bool gradientCalculationTest();
+    public:
+        LossFunctionTestSuite();
+        void run() override;
+};
