@@ -1,8 +1,9 @@
 #include "lossFunction.hpp"
+#include <cassert>
 
 
 template <typename T>
-Tensor<T> LossFunctionCalculator<T>::calculateGradient (const Tensor<T> & input, const Tensor<T> & expected) {
+Tensor<T> LossFunctionCalculator::calculateGradient (const Tensor<T> & input, const Tensor<T> & expected) {
     assert(input.getDimension() == expected.getDimension());
     
     Tensor<T> gradient(input.getOrder(), input.getDimension());
@@ -16,4 +17,9 @@ Tensor<T> LossFunctionCalculator<T>::calculateGradient (const Tensor<T> & input,
     }
 
     return gradient;
+}
+
+namespace LossFunctionCalculator {
+    template Tensor<double> calculateGradient (const Tensor<double> & input, const Tensor<double> & expected); 
+    template Tensor<float> calculateGradient (const Tensor<float> & input, const Tensor<float> & expected); 
 }

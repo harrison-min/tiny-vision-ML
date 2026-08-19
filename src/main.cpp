@@ -16,6 +16,11 @@ int main (int argc, char ** argv) {
     NeuralNetworkTestSuite<float> fNetworkTest;
     dNetworkTest.run();
     fNetworkTest.run();
+
+    LossFunctionTestSuite<double> dLossTest;
+    LossFunctionTestSuite<float> fLossTest;
+    dLossTest.run();
+    fLossTest.run();
     
     return 0;
 }
