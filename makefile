@@ -1,9 +1,9 @@
 COMPILER = g++
-CFLAGS =  -Wall -Iinclude -MMD
+CFLAGS =  -Wall -Iinclude -IthirdParty -MMD
 LDFLAGS = 
 LIBS = 
 TARGET = bin/main
-SOURCE = src/main.cpp src/tensorMath.cpp src/testSuite.cpp src/layer.cpp src/neuralNetwork.cpp src/lossFunction.cpp
+SOURCE = src/main.cpp src/tensorMath.cpp src/testSuite.cpp src/layer.cpp src/neuralNetwork.cpp src/lossFunction.cpp src/imageEncoder.cpp
 
 OBJECTS = $(patsubst src/%.cpp, obj/%.o, $(SOURCE))
 

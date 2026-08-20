@@ -1,5 +1,6 @@
 #include <iostream>
 #include "testSuite.hpp"
+#include "imageEncoder.hpp"
 
 int main (int argc, char ** argv) {
     TensorTestSuite<double> dTensorTest;
@@ -21,6 +22,9 @@ int main (int argc, char ** argv) {
     LossFunctionTestSuite<float> fLossTest;
     dLossTest.run();
     fLossTest.run();
+
+    ImageEncoder<double> encoder;
+    encoder.encodeImage("data/test_image-2532858414.jpg");
     
     return 0;
 }
