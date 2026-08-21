@@ -1,5 +1,6 @@
 #include <iostream>
 #include "testSuite.hpp"
+#include "imageEncoder.hpp"
 
 int main (int argc, char ** argv) {
     TensorTestSuite<double> dTensorTest;
@@ -21,6 +22,11 @@ int main (int argc, char ** argv) {
     LossFunctionTestSuite<float> fLossTest;
     dLossTest.run();
     fLossTest.run();
+
+    ImageEncoderTestSuite<double> dImageTest;
+    ImageEncoderTestSuite<float> fImageTest;
+    dImageTest.run();
+    fImageTest.run();
     
     return 0;
 }
