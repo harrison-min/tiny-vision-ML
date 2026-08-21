@@ -23,8 +23,10 @@ int main (int argc, char ** argv) {
     dLossTest.run();
     fLossTest.run();
 
-    ImageEncoder<double> encoder;
-    encoder.encodeImage("data/test_image-2532858414.jpg");
+    ImageEncoderTestSuite<double> dImageTest;
+    ImageEncoderTestSuite<float> fImageTest;
+    dImageTest.run();
+    fImageTest.run();
     
     return 0;
 }

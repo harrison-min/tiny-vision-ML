@@ -64,3 +64,11 @@ class LossFunctionTestSuite : public TestSuite {
         LossFunctionTestSuite();
         void run() override;
 };
+
+template <typename T>
+class ImageEncoderTestSuite : public TestSuite {
+        bool imageEncoderTest();
+    public:
+        ImageEncoderTestSuite();
+        void run() override;
+};

@@ -15,8 +15,6 @@ Tensor<T> ImageEncoder<T>::encodeImage(const std::string & filePath) {
 
     assert(data != nullptr);
 
-    std::cout << "Width: " << width << ", Height: " << height << ", Channels: " << channels << "\n";
-    
     Tensor<T> output (4, {1, REQUESTED_CHANNELS, height, width});
 
     for (int c = 0; c < REQUESTED_CHANNELS; ++ c) {

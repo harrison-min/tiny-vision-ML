@@ -1,6 +1,7 @@
 #include "testSuite.hpp"
 #include "layer.hpp"
 #include "neuralNetwork.hpp"
+#include "imageEncoder.hpp"
 #include "lossFunction.hpp"
 #include <iostream>
 #include <limits>
@@ -1089,6 +1090,84 @@ bool LossFunctionTestSuite<T>::gradientCalculationTest() {
 
     if (testPassed) {
         std::cout << "PASS: gradientCalculationTest\n";
+    }
+
+    return testPassed;
+}
+
+//==================================================================
+//  IMAGE ENCODER TESTS
+//==================================================================
+template class ImageEncoderTestSuite<double>;
+template class ImageEncoderTestSuite<float>;
+
+static int TOTAL_NUMBER_OF_IMAGE_ENCODER_TESTS = 1;
+
+template <typename T>
+ImageEncoderTestSuite<T>::ImageEncoderTestSuite() {
+    numPassed = 0;
+    numTests = TOTAL_NUMBER_OF_IMAGE_ENCODER_TESTS;
+}
+
+template <typename T>
+void ImageEncoderTestSuite<T>::run() {
+    
+    std::cout << "\n\nRUNNING IMAGE ENCODER TEST SUITE:\n";
+    std::cout << "Type: " << typeid(T).name() << "\n";
+
+    if(imageEncoderTest()) numPassed ++;
+
+    assert(numPassed == numTests);
+}
+
+template <typename T>
+bool ImageEncoderTestSuite<T>::imageEncoderTest() {
+    const int numChannels = 3;
+    const int height = 1600;
+    const int width = 2400;
+    std::vector<int> expectedDimensions = {1, numChannels, height, width};
+
+    ImageEncoder<T> encoder;
+
+    Tensor<T> output = encoder.encodeImage("data/tests/test.jpg");
+
+    T expectedRedPixel [3] = {240, 0, 1};
+    T expectedBlackPixel [3] = {0, 0, 0};
+    T expectedWhitePixel [3] = {255, 255, 255};
+
+    int redPixelOffset = 300 * width + 1050; // coordinates are 1050, 300
+    int blackPixelOffset = 800 * width + 1200; // coordinates are 1200, 800
+    int whitePixelOffset = 100 * width + 2300; // coordinates are 2300, 100
+
+    bool testPassed = true;
+    if (output.getDimension() != expectedDimensions) {
+        std::cout << "FAIL: imageEncoderTest (output tensor dimensions do not equal expected)\n";
+        testPassed = false;
+    }
+
+    for (int channel = 0; channel < 3; ++ channel) {
+        const int channelOffset = channel * height * width;
+        if (output[channelOffset + redPixelOffset] != expectedRedPixel[channel]) {
+            std::cout << "FAIL: imageEncoderTest (red pixel in channel " << channel << " doesnt match expected)\n";            testPassed = false;
+            std::cout << "Expected: " << expectedRedPixel[channel] << ", Actual: " << output[channelOffset + redPixelOffset] << "\n";
+            testPassed = false;
+        }
+
+        if (output[channelOffset + blackPixelOffset] != expectedBlackPixel[channel]) {
+            std::cout << "FAIL: imageEncoderTest (black pixel in channel " << channel << " doesnt match expected)\n";
+            std::cout << "Expected: " << expectedBlackPixel[channel] << ", Actual: " << output[channelOffset + blackPixelOffset] << "\n";
+            testPassed = false;
+        }
+
+        if (output[channelOffset + whitePixelOffset] != expectedWhitePixel[channel]) {
+            std::cout << "FAIL: imageEncoderTest (white pixel in channel " << channel << " doesnt match expected)\n";
+            std::cout << "Expected: " << expectedWhitePixel[channel] << ", Actual: " << output[channelOffset + whitePixelOffset] << "\n";
+            testPassed = false;
+        }
+    }
+
+    if (testPassed) {
+        std::cout<< "PASS: imageEncoderTest\n";
     }
 
     return testPassed;
